@@ -80,11 +80,10 @@ rootextra	options to pass to kernel related to mounting root,
 		default "rootfstype=$rootfs ro rootwait"
 rootlabel	used for root device if rootdev is "label", see man pages
 		for mount, blkid, fstab for more information.
-		rootlabel is NOT cleared by "run reset".  Examples:
-		LABEL=arch-root
-		UUID=3e6be9de-8139-11d1-9106-a43f08d823a6
-		PARTUUID="2fc08b14-02"
-		PARTLABEL=root
+		rootlabel is NOT cleared by "run reset".  Example:
+		PARTUUID=2fc08b14-02
+		Kernel only supports partition UUID at this time, not
+		UUID=, LABEL= or PARTLABEL=
 
 fdt_load	if "yes", load a dtb file, default yes
 fdt_dev		device to load dtb files from, default $bootdev
