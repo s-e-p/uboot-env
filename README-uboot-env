@@ -1,0 +1,62 @@
+This program is used to read or modify U-Boot environment variables in
+an image file or on a block boot device (e.g. SD card or USB drive that
+contains U-Boot).
+
+The configuration file (/etc/uboot-env.conf) contains valid device
+names with offsets and lengths.  The default configuration may need to
+be changed for your specific device.
+
+The config file distributed is one that works with the CuBox-i, with
+an offset of 0x60000 for 0x2000.
+
+If you specify an image file (one that's intended to be written directly
+to the block device used to boot a system) you'll need to specify the
+offset.  Although the configuration file could be modified to have a
+non-zero default for the offset, it probably isn't a good idea.
+
+The environment save area is protected by a CRC32 checksum.  For safety,
+uboot-env will immediately exit if the checksum is not correct, unless
+the -I flag is used (in which case the checksum must NOT be correct, it
+can only be used to initialize an area known to be invalid).
+
+
+Usage: uboot-env [-cdfol] get -s filename
+       uboot-env [-cdfol] get [var1 ... ]
+       uboot-env [-cdfol] del [var1 ... ]
+       uboot-env [-cdfol] del -[i|I]
+       uboot-env [-cdfol] set -s filename
+       uboot-env [-cdfol] set var val
+       uboot-env [-cdfol] set < uEnv.txt
+
+      -c config        Alternate config file
+      -d devicename    Device with environment
+      -f filename      File with environment
+      -s filename      Save to or set from file
+      -o offset        Offset into device
+      -l length        Length in device
+      -i               Initialize environment
+      -I               Forced initialize
+
+When using the -s option with get, the referenced file will be overwritten
+and the entire environment area will be saved (including checksum).
+When used with set, the file must be long enough and the checksum must
+be valid; the entire environment area on the target will be replaced.
+Note that any offset applies only to the target, the save file always
+has an offset of zero.
+
+When setting a variable on the command line, you must provide one
+variable name and one value argument; if there are embedded spaces or
+other special characters in the value, you'll need to quote or escape it.
+A variable name may not contain "=".
+
+Setting a variable to an empty value will delete the variable.
+
+When using the set option with no further arguments, variables and
+values are read from stdin, with an "=" separating the two.  Again,
+setting an empty value will delete the variable.
+
+It is not an error to delete a non-existent variable.
+
+When getting variables, more than one variable name may be specified.
+The variables will be displayed in alphabetic order.  If no variables
+are specified, all variables are retrieved.
