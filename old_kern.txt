@@ -1,0 +1,3 @@
+bootfile=uImage
+bootkern=bootm
+load_fdt=no

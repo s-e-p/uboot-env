@@ -1,24 +1,8 @@
-baudrate=115200
-bootcmd=run preset bootset bootenv bootload bootstart
-bootdelay=3
 bootload=load $bootdev $bootunit:$bootpart 0x$loadaddr $bootroot$bootfile; if test $fdt_load = yes; then load $fdt_dev $fdt_unit:$fdt_part 0x$fdt_addr $fdt_file; bootrun="$bootkern $loadaddr - $fdt_addr"; else bootrun=$bootkern; fi
 bootset=setenv bootenv 'run set$rootdev; setenv bootargs $root $video $console $bootextra'; if load $bootdev $bootunit:$bootpart 0x$loadaddr $envfile; then env import -t $loadaddr $filesize; fi; loadfile=$bootfile; rootdev=$bootdev; rootunit=$bootunit; rootpart=$bootpart; fdt_dev=$bootdev; fdt_unit=$bootunit; fdt_part=$bootpart; fdt_dir=${bootroot}dts/; if test $cpu = 6Q; then fdt_cpu=imx6q; else fdt_cpu=imx6dl; fi; if test $board = mx6-cubox-i; then fdt_board=cubox-i; else fdt_board=hummingboard; fi; fdt_file=$fdt_dir$fdt_cpu-$fdt_board.dtb
-bootstart=$bootrun
-console=console=ttymxc0,115200
 fdt_high=ffffffff
 loadaddr=14000000
-mmc=run reset; mmc rescan
-new_kern=env del bootfile bootkern load_fdt
-old_kern=setenv bootfile uImage; setenv bootkern bootm; setenv load_fdt no
-preboot=usb start
+new=env del bootfile bootkern load_fdt
+old=setenv bootfile uImage; setenv bootkern bootm; setenv load_fdt no
 preset=bootdev=mmc; bootunit=0; bootpart=1; bootroot=/boot/; envfile=${bootroot}uEnv.txt; bootfile=zImage; rootfs=ext4; bootkern=bootz; fdt_load=yes; fdt_addr=1c000000
 reset=env del bootdev bootunit bootpart bootroot envfile bootfile bootkern rootdev rootunit rootpart rootfs; env del fdt_load fdt_dev fdt_unit fdt_part fdt_dir fdt_cpu fdt_board fdt_file bootkern
-serialcon=setenv console console=ttymxc0,$baudrate; setenv stdout serial; setenv stderr serial; setenv stdin serial,usbkbd
-setmmc=root="root=/dev/mmcblk${rootunit}p$rootpart rootfstype=$rootfs ro rootwait"
-setusb=root="root=/dev/sda$rootpart rootfstype=$rootfs ro rootwait"
-splashpos=m,m
-stderr=serial,vga
-stdin=serial,usbkbd
-stdout=serial,vga
-usb=run reset; setenv bootdev usb; usb reset
-videocon=setenv console; setenv stdout vga; setenv stderr vga; setenv stdin serial,usbkbd
