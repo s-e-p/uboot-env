@@ -60,7 +60,7 @@ bootdev		device (mmc, usb) to load files from, default mmc
 bootunit	unit to load files from, currently always 0
 bootpart	partition to load files from, default 1
 bootroot	directory to load files from, default /boot/
-envfile		file name of environment file to load, default ${bootroot}uEnv.txt
+envfile		environment file to load, default ${bootroot}uEnv.txt
 
 bootfile	kernel file name, default zImage
 bootkern	command to boot kernel (bootm or bootz) or script (source),
@@ -78,23 +78,26 @@ fdt_dev		device to load dtb files from, default $bootdev
 fdt_unit	unit to load dtb files from, default $bootunit
 fdt_part	partition to load dtb files from, default $bootpart
 fdt_dir		directory to load dtb files from, default ${bootpart}dts/
-fdt_file	dtb file name, normally calculated (e.g. /boot/dts/imx6q-cubox-i.dtb)
+fdt_file	dtb file name, normally calculated (e.g.
+		/boot/dts/imx6q-cubox-i.dtb)
 
 console		set with "run serialcon" or cleared with "run videocon"
 video		use for any kernel video parameter arguments
-root		set automatically based on rootdev, rootunit, rootpart and rootfs
+root		set automatically based on rootdev/rootunit/rootpart/rootfs
 bootextra	available for any other kernel command line arguments needed
 
 
-One way of running a boot script (mkimage script file) is to create a uEnv.txt
-file (default location, /boot/uEnv.txt) with something like the following:
+One way of running a boot script (mkimage script file) is to create a
+uEnv.txt file (default location, /boot/uEnv.txt) with something like
+the following:
 
 loadfile=boot.scr
 bootrun=source
 
-This would load /boot/boot.scr and execute it.  The script could use any of the
-other variables; bootargs will be set up, bootfile will still have the kernel name,
-fdt_file will be the dtb file name, etc.  If a dtb file is specified, it will
-already be loaded.
+This would load /boot/boot.scr and execute it.  The script could use
+any of the other variables; bootargs will be set up, bootfile will
+still have the kernel name, fdt_file will be the dtb file name, etc.
+If a dtb file is specified, it will already be loaded.
 
-If the script returns, the boot process is halted, no other default action is taken.
+If the script returns, the boot process is halted, no other default
+action is taken.
