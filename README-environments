@@ -1,0 +1,60 @@
+There are several environment text files included, these are targeted
+towards the CuBox-i, but may be useful for other devices.
+
+default.txt	Contains the default boot scripts and variables for
+		the CuBox-i U-Boot.
+
+u-boot.txt	Contains a custom boot environment with scripts and
+		variables.  The following environment files pertain
+		to this custom environment.
+
+reset.txt	Resets all parameters back to default.  Same as using
+		the "run reset" command in U-Boot.
+
+videocon.txt	Set variables to use the video console with USB keyboard.
+		This also affects the bootargs kernel command line.  Same
+		as using "run videocon" in U-Boot.
+
+serialcon.txt	Set variables to use the serial console.  Same as using
+		"run serialcon" in U-Boot.
+
+old_kern.txt	Set variables to use older kernel (uImage, no dtb file),
+		same as using "run old_kern" in U-Boot.
+
+new_kern.txt	Set variables to use newer kernel (zImage, dtb file), same
+		as using "run new_kern" in U-Boot.  This is the default.
+
+
+update.txt	Use on older version of environment variable to update to
+		this version.  The old version will NOT work with current
+		versions of U-Boot, the new version will NOT work with
+		older versions of U-Boot.
+
+To use any of these, run (for example, with the update.txt file):
+
+uboot-env set < update.txt
+
+If you want to load the u-boot.txt or default.txt, you may want to clear
+all other variables out:
+
+uboot-env del -i
+uboot-env set < u-boot.txt
+
+You can also force the default U-Boot environment by corrupting the save
+area; the cleanest way to do this is to use dd to zero the area (thus
+the checksum fails, and U-Boot loads default environment).  The following
+command works on the CuBox-i, with an offset of 0x60000 and length of
+0x2000.  VERIFY the command, be certain you're writing to the correct
+device or you will lose data.
+
+verify that U-Boot variables are installed (if this fails, either you
+don't need to run the dd command, or the offset/length is WRONG so
+you should NOT run the dd command):
+
+uboot-env -o 0x60000 -l 0x2000 -d /dev/mmcblk0 del -i
+
+If that command succeeds with no error, you can safely use:
+
+dd if=/dev/zero bs=8K count=1 seek=48 of=/dev/mmcblk0
+
+8K = 0x2000, 48 * 8K = 0x60000
