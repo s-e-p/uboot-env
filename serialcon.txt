@@ -1,0 +1,4 @@
+console=console=ttymxc0,115200
+stdin=serial,usbkbd
+stdout=serial
+stderr=serial

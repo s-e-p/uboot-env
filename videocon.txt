@@ -1,0 +1,4 @@
+console=
+stdin=serial,usbkbd
+stdout=serial,vga
+stderr=serial,vga
