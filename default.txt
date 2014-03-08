@@ -1,0 +1,39 @@
+baudrate=115200
+boot_fdt=no
+bootcmd=mmc dev ${mmcdev}; if mmc rescan; then if run ext2loadbootscript; then run bootscript; elif run fatloadbootscript; then run bootscript; else if run ext2loadbootenv || run fatloadbootenv; then run importbootenv; fi; if run ext2loadbootfile; then run ext2mmcboot; elif run fatloadbootfile; then run fatmmcboot; else run netboot; fi; fi; else run netboot; fi
+bootdelay=3
+bootenv=uEnv.txt
+bootfile=uImage
+bootscript=echo Running bootscript from mmc ...; source
+console=ttymxc0
+ethprime=FEC
+ext2loadbootenv=ext2load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootenv}
+ext2loadbootfile=ext2load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootfile}
+ext2loadbootscript=ext2load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};
+ext2loadfdt=ext2load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}
+ext2mmcboot=echo Booting from mmc ...; run mmcargs; if test ${boot_fdt} = yes || test ${boot_fdt} = try; then if run ext2loadfdt; then if test ${bootfile} = zImage; then bootz ${loadaddr} - ${fdt_addr}; else bootm ${loadaddr} - ${fdt_addr}; fi; else if test ${boot_fdt} = try; then if test ${bootfile} = zImage; then bootz; else bootm; fi; else echo WARN: Cannot load the DT; fi; fi; else if test ${bootfile} = zImage; then bootz; else bootm; fi; fi;
+fatloadbootenv=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootenv}
+fatloadbootfile=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootfile}
+fatloadbootscript=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};
+fatloadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}
+fatmmcboot=echo Booting from mmc ...; run mmcargs; if test ${boot_fdt} = yes || test ${boot_fdt} = try; then if run fatloadfdt; then if test ${bootfile} = zImage; then bootz ${loadaddr} - ${fdt_addr}; else bootm ${loadaddr} - ${fdt_addr}; fi; else if test ${boot_fdt} = try; then if test ${bootfile} = zImage; then bootz; else bootm; fi; else echo WARN: Cannot load the DT; fi; fi; else if test ${bootfile} = zImage; then bootz; else bootm; fi; fi;
+fdt_addr=0x11000000
+fdt_high=0xffffffff
+importbootenv=echo Importing environment from mmc${mmcdev} ...; env import -t ${loadaddr} ${filesize}
+initrd_high=0xffffffff
+ip_dyn=yes
+loadaddr=0x10800000
+mmcargs=setenv bootargs console=${console},${baudrate} root=${mmcroot}
+mmcdev=0
+mmcpart=1
+mmcroot=/dev/mmcblk0p2 rootwait rw
+netargs=setenv bootargs console=${console},${baudrate} root=/dev/nfs ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp
+netboot=echo Booting from net ...; if test ${bootfile} = zImage; then setenv realfile zImage; else setenv realfile uImage; fi; run netargs; if test ${ip_dyn} = yes; then setenv get_cmd dhcp; else setenv get_cmd tftp; fi; ${get_cmd} ${bootfile}; if test ${boot_fdt} = yes || test ${boot_fdt} = try; then if ${get_cmd} ${fdt_addr} ${fdt_file}; then if test ${realfile} = zImage; then bootz ${loadaddr} - ${fdt_addr}; else bootm ${loadaddr} - ${fdt_addr}; fi; else if test ${boot_fdt} = try; then if test ${bootfile} = zImage; then bootz; else bootm; fi; else echo WARN: Cannot load the DT; fi; fi; else if test ${bootfile} = zImage; then bootz; else bootm; fi; fi;
+preboot=usb start
+script=boot.scr
+splashpos=m,m
+stderr=serial,vga
+stdin=serial,usbkbd
+stdout=serial,vga
+update_sd_firmware=if test ${ip_dyn} = yes; then setenv get_cmd dhcp; else setenv get_cmd tftp; fi; if mmc dev ${mmcdev}; then if ${get_cmd} ${update_sd_firmware_filename}; then setexpr fw_sz ${filesize} / 0x200; setexpr fw_sz ${fw_sz} + 1; mmc write ${loadaddr} 0x2 ${fw_sz}; fi; fi
+update_sd_firmware_filename=u-boot.imx

@@ -1,0 +1,20 @@
+baudrate=115200
+bootcmd=run preset bootset bootenv bootload bootstart
+bootdelay=3
+bootload=${bootfs}load $bootdev $bootunit:$bootpart $loadaddr $bootroot/$loadfile
+bootset=setenv bootenv 'run set$rootdev; setenv bootargs $root $video $console $bootextra'; if ${bootfs}load $bootdev $bootunit:$bootpart $loadaddr $envfile; then env import -t $loadaddr $filesize; fi; bootrun=bootm; loadfile=$bootfile; rootdev=$bootdev; rootunit=$bootunit; rootpart=$bootpart
+bootstart=$bootrun
+loadaddr=10800000
+mmc=run reset; mmc rescan
+preboot=usb start
+preset=bootdev=mmc; bootunit=0; bootpart=1; bootfs=ext2; envfile=uEnv.txt; bootroot=/boot; bootfile=uImage; rootfs=ext4
+reset=env del bootdev bootunit bootpart bootfs envfile bootroot bootfile rootdev rootunit rootpart rootfs
+serialcon=setenv console console=ttymxc0,$baudrate; setenv stdout serial; setenv stderr serial; setenv stdin serial,usbkbd
+setmmc=root="root=/dev/mmcblk${rootunit}p$rootpart rootfstype=$rootfs ro rootwait"
+setusb=root="root=/dev/sda$rootpart rootfstype=$rootfs ro rootwait"
+splashpos=m,m
+stderr=serial,vga
+stdin=serial,usbkbd
+stdout=serial,vga
+usb=run reset; setenv bootdev usb; usb reset
+videocon=setenv console; setenv stdout vga; setenv stderr vga; setenv stdin serial,usbkbd
