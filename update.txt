@@ -1,6 +1,6 @@
 bootload=load $bootdev $bootunit:$bootpart 0x$loadaddr $bootroot$bootfile; if test $fdt_load = yes; then load $fdt_dev $fdt_unit:$fdt_part 0x$fdt_addr $fdt_file; bootrun="$bootkern $loadaddr - $fdt_addr"; else bootrun=$bootkern; fi
 bootset=setenv bootenv 'run set$rootdev; setenv bootargs $root $video $console $bootextra'; if load $bootdev $bootunit:$bootpart 0x$loadaddr $envfile; then env import -t $loadaddr $filesize; fi; loadfile=$bootfile; rootdev=$bootdev; rootunit=$bootunit; rootpart=$bootpart; fdt_dev=$bootdev; fdt_unit=$bootunit; fdt_part=$bootpart; fdt_dir=${bootroot}dts/; if test $cpu = 6Q; then fdt_cpu=imx6q; else fdt_cpu=imx6dl; fi; if test $board = mx6-cubox-i; then fdt_board=cubox-i; else fdt_board=hummingboard; fi; fdt_file=$fdt_dir$fdt_cpu-$fdt_board.dtb
-fdt_dir=/
+fdt_dir=/boot/
 fdt_high=ffffffff
 loadaddr=14000000
 new=env del bootfile bootkern load_fdt
