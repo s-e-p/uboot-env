@@ -24,21 +24,15 @@ old_kern.txt	Set variables to use older kernel (uImage, no dtb file),
 new_kern.txt	Set variables to use newer kernel (zImage, dtb file), same
 		as using "run new_kern" in U-Boot.  This is the default.
 
+To use any of these, run (for example, with the serialcon.txt file):
 
-update.txt	Use on older version of environment variable to update to
-		this version.  The old version will NOT work with current
-		versions of U-Boot, the new version will NOT work with
-		older versions of U-Boot.
-
-To use any of these, run (for example, with the update.txt file):
-
-uboot-env set < update.txt
+uboot-env set < serialcon.txt
 
 If you want to load the u-boot.txt or default.txt, you may want to clear
 all other variables out:
 
 uboot-env del -i
-uboot-env set < u-boot.txt
+uboot-env set < default.txt
 
 You can also force the default U-Boot environment by corrupting the save
 area; the cleanest way to do this is to use dd to zero the area (thus
