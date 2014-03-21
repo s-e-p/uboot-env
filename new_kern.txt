@@ -1,3 +1,3 @@
 bootfile=
 bootkern=
-load_fdt=
+fdt_load=
