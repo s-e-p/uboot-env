@@ -1,0 +1,15 @@
+Source: uboot-env
+Section: admin
+Priority: optional
+Maintainer: Peter Felecan <peter@felecan.org>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.4
+
+Package: uboot-env
+Architecture: any-arm
+Depends: ${misc:Depends}
+Description: Read or modify U-Boot environment variables
+ .
+ This program is used to read or modify U-Boot environment variables in
+ an image file or on a block boot device (e.g. SD card or USB drive that
+ contains U-Boot).

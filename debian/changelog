@@ -1,0 +1,5 @@
+uboot-env (1.0.0) testing; urgency=low
+
+  * Initial Release.
+
+ -- Peter Felecan <peter@felecan.org>  Wed, 18 Mar 2015 14:43:01 +0200
