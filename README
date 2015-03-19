@@ -1,0 +1,41 @@
+$Id$
+
+Installation
+------------
+
+Before trying to install using the instructions found in the standard
+INSTALL file, please use, alternatively:
+
+autoreconf --install --symlink
+
+or
+
+aclocal && automake -a && autoconf
+
+Cross-compilation
+-----------------
+
+If cross-compiling, you should install a crosscompiler, for example,
+in Debian unstable amd64: gcc-arm-linux-gnueabihf.
+
+The configuration must be called with a build and host triplet, as for
+example:
+
+	./configure --build x86_64-unknown-linux-gnu --host armhf-unknown-linux-gnueabihf
+
+Caveat: the current Debian distribution, as of Thu Mar 19 2015,
+supports cross-compilation in sid on an amd64 architecture; it is
+possible that other combination of releases and architectures work but
+not to my knowledge.
+
+Packaging
+---------
+
+For the moment, this is implemented only for Debian. It is possible to
+extend this for other packaging systems and/or other distributions.
+
+	make package
+
++ Local Variables:
++ mode: text
++ End:
