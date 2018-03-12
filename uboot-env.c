@@ -419,13 +419,13 @@ int	process_args(int argc, char * argv[], int opt)
 		return -1;
 	}
 
-	if ((lengthv == NULL) || (isdev &&
-		((offsetv == NULL) || (envname == NULL))))
+	if ((lengthv == NULL) || (isdev && (
+		((offsetv == NULL) || (envname == NULL)))))
 	{
 		read_config(config, isdev);
 
-		if ((lengthv == NULL) || (isdev &&
-			(offsetv == NULL) || (envname == NULL)))
+		if ((lengthv == NULL) || (isdev && (
+			(offsetv == NULL) || (envname == NULL))))
 		{
 			errmsg("Missing parameters or invalid device\n");
 			return -1;
@@ -687,7 +687,11 @@ void	update(void)
 	pwrite(file, data, length, offset);
 
 	if (isdev)
+#if defined LINUX || OSX
+		fsync(file);
+#else
 		fdatasync(file);
+#endif
 
 	close(file);
 	file = -1;
