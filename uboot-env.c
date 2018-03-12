@@ -683,9 +683,21 @@ int	read_env(FILE * file)
 
 void	update(void)
 {
-	setcrc(data, length);
-	pwrite(file, data, length, offset);
+	long	l;
 
+	setcrc(data, length);
+	if ((l = pwrite(file, data, length, offset)) != length)
+	{
+		if (l == -1)
+			perror("writing environment");
+
+		else
+			fprintf(stderr, "short write: %lu\n", l);
+
+		l = 0;
+	}
+
+	if (l)
 	if (isdev)
 #if defined LINUX || OSX
 		fsync(file);
