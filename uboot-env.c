@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 
 #define CRCLEN	4
 
@@ -24,13 +25,15 @@ char *	config;		/* config file name */
 char *	envname;	/* device or file name */
 char *	savefile;	/* file to get/set */
 char *	offsetv;	/* offset to start */
-char *	lengthv;	/* length of environment */
+char *	lengthv = NULL;	/* length of environment */
 
 long	offset;
 long	length;
 int	isdev;
 
 void *	data;
+
+struct stat st;
 
 void	usage(char * argv0)
 {
@@ -419,7 +422,7 @@ int	process_args(int argc, char * argv[], int opt)
 		return -1;
 	}
 
-	if ((lengthv == NULL) || (isdev && (
+	if ((isdev && (
 		((offsetv == NULL) || (envname == NULL)))))
 	{
 		read_config(config, isdev);
@@ -440,6 +443,12 @@ int	process_args(int argc, char * argv[], int opt)
 		fprintf(stderr, "%s: invalid offset\n", offsetv);
 		return -1;
 	}
+
+	if ((lengthv == NULL) && (!isdev) && (envname))
+	{
+		stat(envname, &st);
+		length = st.st_size;
+	}else
 
 	if ((length = getnum(lengthv)) <= 0)
 	{
