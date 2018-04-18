@@ -643,10 +643,18 @@ int	set_env(char * name, char * val)
 	adjust = locl - adjust;
 	locl += loc;
 
-	if ((l - adjust) > length)
+	if(isdev)
 	{
-		errmsg("environment full\n");
-		return 1;
+		if ((l - adjust) > length)
+		{
+			errmsg("environment full\n");
+			return 1;
+		}
+	}
+	else
+	{
+		length = l - adjust + CRCLEN;
+		data = realloc(data, length);
 	}
 
 	if ((adjust != 0) && (locl < l))
