@@ -446,8 +446,10 @@ int	process_args(int argc, char * argv[], int opt)
 
 	if ((lengthv == NULL) && (!isdev) && (envname))
 	{
-		stat(envname, &st);
-		length = st.st_size;
+                if(-1 == stat(envname, &st))
+                        length = CRCLEN;
+                else
+                        length = st.st_size > CRCLEN?st.st_size:CRCLEN;
 	}else
 
 	if ((length = getnum(lengthv)) <= 0)
