@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 
 #define CRCLEN	4
 
@@ -24,13 +25,15 @@ char *	config;		/* config file name */
 char *	envname;	/* device or file name */
 char *	savefile;	/* file to get/set */
 char *	offsetv;	/* offset to start */
-char *	lengthv;	/* length of environment */
+char *	lengthv = NULL;	/* length of environment */
 
 long	offset;
 long	length;
 int	isdev;
 
 void *	data;
+
+struct stat st;
 
 void	usage(char * argv0)
 {
@@ -419,13 +422,13 @@ int	process_args(int argc, char * argv[], int opt)
 		return -1;
 	}
 
-	if ((lengthv == NULL) || (isdev &&
-		((offsetv == NULL) || (envname == NULL))))
+	if ((isdev && (
+		((offsetv == NULL) || (envname == NULL)))))
 	{
 		read_config(config, isdev);
 
-		if ((lengthv == NULL) || (isdev &&
-			(offsetv == NULL) || (envname == NULL)))
+		if ((lengthv == NULL) || (isdev && (
+			(offsetv == NULL) || (envname == NULL))))
 		{
 			errmsg("Missing parameters or invalid device\n");
 			return -1;
@@ -440,6 +443,14 @@ int	process_args(int argc, char * argv[], int opt)
 		fprintf(stderr, "%s: invalid offset\n", offsetv);
 		return -1;
 	}
+
+	if ((lengthv == NULL) && (!isdev) && (envname))
+	{
+                if(-1 == stat(envname, &st))
+                        length = CRCLEN;
+                else
+                        length = st.st_size > CRCLEN?st.st_size:CRCLEN;
+	}else
 
 	if ((length = getnum(lengthv)) <= 0)
 	{
@@ -632,10 +643,18 @@ int	set_env(char * name, char * val)
 	adjust = locl - adjust;
 	locl += loc;
 
-	if ((l - adjust) > length)
+	if(isdev)
 	{
-		errmsg("environment full\n");
-		return 1;
+		if ((l - adjust) > length)
+		{
+			errmsg("environment full\n");
+			return 1;
+		}
+	}
+	else
+	{
+		length = l - adjust + CRCLEN;
+		data = realloc(data, length);
 	}
 
 	if ((adjust != 0) && (locl < l))
@@ -683,11 +702,27 @@ int	read_env(FILE * file)
 
 void	update(void)
 {
-	setcrc(data, length);
-	pwrite(file, data, length, offset);
+	long	l;
 
+	setcrc(data, length);
+	if ((l = pwrite(file, data, length, offset)) != length)
+	{
+		if (l == -1)
+			perror("writing environment");
+
+		else
+			fprintf(stderr, "short write: %lu\n", l);
+
+		l = 0;
+	}
+
+	if (l)
 	if (isdev)
+#if defined LINUX || OSX
+		fsync(file);
+#else
 		fdatasync(file);
+#endif
 
 	close(file);
 	file = -1;
