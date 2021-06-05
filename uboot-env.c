@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
+#include <sys/ioctl.h>
+#include <mtd/mtd-user.h>
+
 
 #define CRCLEN	4
 
@@ -683,7 +686,24 @@ int	read_env(FILE * file)
 
 void	update(void)
 {
-	setcrc(data, length);
+        if (isdev) {
+          mtd_info_t mtd_info;
+          if (!ioctl(file, MEMGETINFO, &mtd_info)) {
+            erase_info_t ei;
+            ei.length = mtd_info.erasesize;
+            ei.start = (offset/ei.length) * ei.length;          
+
+            while((ssize_t)(ei.start - offset) < length) {
+              ioctl(file, MEMUNLOCK, &ei);
+              if (ioctl(file, MEMERASE, &ei)) {
+                perror("Erase flash");
+                exit(3);
+              }
+              ei.start += ei.length;
+            }
+          }
+        }
+    	setcrc(data, length);
 	pwrite(file, data, length, offset);
 
 	if (isdev)
