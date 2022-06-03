@@ -45,22 +45,25 @@ void	usage(char * argv0)
 	else
 		pname += 1;
 
-	fprintf(stderr, "Usage: %s [-cdfol] get -s filename\n", pname);
-	fprintf(stderr, "       %s [-cdfol] get [var1 ... ]\n", pname);
-	fprintf(stderr, "       %s [-cdfol] del [var1 ... ]\n", pname);
-	fprintf(stderr, "       %s [-cdfol] del -[i|I]\n", pname);
-	fprintf(stderr, "       %s [-cdfol] set -s filename\n", pname);
-	fprintf(stderr, "       %s [-cdfol] set var val\n", pname);
-	fprintf(stderr, "       %s [-cdfol] set < uEnv.txt\n", pname);
-	fprintf(stderr, "\n");
-	fprintf(stderr, "      -c config        Alternate config file\n");
-	fprintf(stderr, "      -d devicename    Device with environment\n");
-	fprintf(stderr, "      -f filename      File with environment\n");
-	fprintf(stderr, "      -s filename      Save to or set from file\n");
-	fprintf(stderr, "      -o offset        Offset into device\n");
-	fprintf(stderr, "      -l length        Length in device\n");
-	fprintf(stderr, "      -i               Initialize environment\n");
-	fprintf(stderr, "      -I               Forced initialize\n");
+	fprintf(stderr,
+	"%s revised 6/3/22 brent@mbari.org\n"
+	"Usage: %s [-cdfol] get -s filename\n"
+	"       %s [-cdfol] get [var1 ... ]\n"
+	"       %s [-cdfol] del [var1 ... ]\n"
+	"       %s [-cdfol] del -[i|I]\n"
+	"       %s [-cdfol] set -s filename\n"
+	"       %s [-cdfol] set var val\n"
+	"       %s [-cdfol] set < uEnv.txt\n"
+	"\n"
+	"      -c config        Alternate config file\n"
+	"      -d devicename    Device with environment\n"
+	"      -f filename      File with environment\n"
+	"      -s filename      Save to or set from file\n"
+	"      -o offset        Offset into device\n"
+	"      -l length        Length in device\n"
+	"      -i               Initialize environment\n"
+	"      -I               Forced initialize\n"
+,pname,pname,pname,pname,pname,pname,pname,pname);
 }
 
 static uint32	crc32_tab[] = {
@@ -680,30 +683,30 @@ int	read_env(FILE * file)
 		if (set_env(line, sep + 1))
 			return 1;
 	}
-	
+
 	return 0;
 }
 
 void	update(void)
 {
-        if (isdev) {
-          mtd_info_t mtd_info;
-          if (!ioctl(file, MEMGETINFO, &mtd_info)) {
-            erase_info_t ei;
-            ei.length = mtd_info.erasesize;
-            ei.start = (offset/ei.length) * ei.length;          
+	if (isdev) {
+	  mtd_info_t mtd_info;
+	  if (!ioctl(file, MEMGETINFO, &mtd_info)) {
+	    erase_info_t ei;
+	    ei.length = mtd_info.erasesize;
+	    ei.start = (offset/ei.length) * ei.length;
 
-            while((ssize_t)(ei.start - offset) < length) {
-              ioctl(file, MEMUNLOCK, &ei);
-              if (ioctl(file, MEMERASE, &ei)) {
-                perror("Erase flash");
-                exit(3);
-              }
-              ei.start += ei.length;
-            }
-          }
-        }
-    	setcrc(data, length);
+	    while((ssize_t)(ei.start - offset) < length) {
+	      ioctl(file, MEMUNLOCK, &ei);
+	      if (ioctl(file, MEMERASE, &ei)) {
+	        perror("Erase flash");
+	        exit(3);
+	      }
+	      ei.start += ei.length;
+	    }
+	  }
+	}
+	setcrc(data, length);
 	pwrite(file, data, length, offset);
 
 	if (isdev)
@@ -711,6 +714,59 @@ void	update(void)
 
 	close(file);
 	file = -1;
+}
+
+int envdel(int argc, char *argv[])
+{
+	int dstart = 0;
+	int dend = 0;
+
+	int l = CRCLEN;
+
+	char *	var;
+	while ((l < length) && *(var = data + l))
+	{
+		int	varl;
+		int	entl;
+
+		varl = length - l;
+		entl = next_entry(var, &varl);
+
+		if (entl == 0)
+		{
+			fprintf(stderr, "Malformed environment\n");
+			return 1;
+		}
+
+		entl = l + varl + entl + 2;
+
+		if (match(var, varl, argv, argc) == 0)
+		{
+			if (dstart == dend)
+				dstart = l;
+
+			else if (dend < l)
+			{
+				memmove(data + dstart, data + dend, l - dend);
+				dstart += l - dend;
+			}
+
+			dend = entl;
+		}
+
+		l = entl;
+	}
+
+	if (dstart != dend)
+	{
+		if (dend < l)
+			memmove(data + dstart, data + dend, l - dend);
+
+		l -= dend - dstart;
+
+		bzero(data + l, length - l);
+	}
+    return 0;
 }
 
 int	uenv_get(int argc, char * argv[])
@@ -803,8 +859,9 @@ int	uenv_set(int argc, char * argv[])
 				return 1;
 			}
 
-			if (set_env(argv[0], argv[1]))
-				return 1;
+			if (envdel(1, argv+0) || 
+				set_env(argv[0], argv[1]))
+			return 1;
 		}
 	}
 	else
@@ -838,72 +895,13 @@ int	uenv_set(int argc, char * argv[])
 
 int	uenv_del(int argc, char * argv[])
 {
-	int	args;
-	int	l;
-	char *	var;
-	int	vall;
-
-	int	dstart;
-	int	dend;
-
-	if ((args = process_args(argc, argv, DEL)) == -1)
+	int	args = process_args(argc, argv, DEL);
+	if (args == -1 || envdel(argc-args, argv-args))
 		return 1;
-
-	argc -= args;
-	argv += args;
-
-	dstart = 0;
-	dend = 0;
-
-	l = CRCLEN;
-
-	while ((l < length) && *(var = data + l))
-	{
-		int	varl;
-		int	entl;
-
-		varl = length - l;
-		entl = next_entry(var, &varl);
-
-		if (entl == 0)
-		{
-			fprintf(stderr, "Malformed environment\n");
-			return 1;
-		}
-
-		entl = l + varl + entl + 2;
-
-		if (match(var, varl, argv, argc) == 0)
-		{
-			if (dstart == dend)
-				dstart = l;
-
-			else if (dend < l)
-			{
-				memmove(data + dstart, data + dend, l - dend);
-				dstart += l - dend;
-			}
-
-			dend = entl;
-		}
-
-		l = entl;
-	}
-
-	if (dstart != dend)
-	{
-		if (dend < l)
-			memmove(data + dstart, data + dend, l - dend);
-
-		l -= dend - dstart;
-
-		bzero(data + l, length - l);
-	}
-
-	update();
-
-	return 0;
+    update();
+    return 0;
 }
+
 
 int	main(int argc, char * argv[])
 {
