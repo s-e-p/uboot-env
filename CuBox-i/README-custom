@@ -28,7 +28,7 @@ bootstart	execute what's in the bootrun variable.
 
 Auxiliary (set-up) scripts, execute with "run <script>", e.g. "run reset"
 
-reset		reset all of the parameter variabbles to default (mostly by
+reset		reset all of the parameter variables to default (mostly by
 		deleting them)
 
 serialcon	set stdin, stdout, stderr variables for serial-only console;
@@ -47,7 +47,7 @@ mmc		run reset script (leaving bootdev default to SD card); also
 
 old_kern	set variables to boot from old kernel (uImage with no dtb)
 
-new_keren	reset variables to boot from new kernel (zImage with dtb),
+new_kern	reset variables to boot from new kernel (zImage with dtb),
 		this is the default
 
 setmmc		set root variable corresponding to rootdev
